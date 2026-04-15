@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS Studio - Web Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="shortcut icon" href="/favicon.ico" />
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+	<meta name="apple-mobile-web-app-title" content="OBS" />
+	<link rel="manifest" href="/site.webmanifest" /></head>
+	<meta property="og:type" content="website">
+    <meta property="og:url" content="https://obs.ywa.app/">
+    <meta property="og:title" content="OBS WebApp">
+    <meta property="og:description" content="OBS WebApp is a fully browser-based live video compositing, recording, and non-linear editing (NLE) suite. Inspired by OBS Studio, this WebApp brings recording and other production tools directly into your browser. It requires zero backend servers and zero installations it utilizes HTML5 Canvas, Web Audio APIs, MediaRecorder technologies and more..>
+    <meta property="og:image" content="https://obs.ywa.app/social-share.png">
+<body>    
+    <div id="hiddenMediaContainer" style="display:none;"></div>
+
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+        <filter id="chroma-key-white">
+            <feColorMatrix in="SourceGraphic" type="matrix" values="
+                0 0 0 0 0
+                0 0 0 0 0
+                0 0 0 0 0
+                -1 -1 -1 0 2.9" result="whiteMask" />
+            <feComposite in="SourceGraphic" in2="whiteMask" operator="in" />
+        </filter>
+    </svg>
+
+    <nav class="obs-menu" id="topNav">
+        <div class="menu-item">
+            <span class="menu-title">File</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Show Recordings</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Remux Recordings</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row" id="menuSettingsBtn"><span class="menu-icon"></span><span class="menu-text">Settings</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Show Settings Folder</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Show Profile Folder</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Exit</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">Edit</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Undo Hide 'Window Capture' in 'Scene'</span><span class="menu-shortcut">Ctrl+Z</span></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Redo</span><span class="menu-shortcut">Ctrl+Shift+Z</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Copy</span><span class="menu-shortcut">Ctrl+C</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Paste (Reference)</span><span class="menu-shortcut">Ctrl+V</span></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Paste (Duplicate)</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Copy Filters</span></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Paste Filters</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Transform</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Order</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Preview Scaling</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Lock Preview</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Advanced Audio Properties</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">View</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Reset UI</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Fullscreen Interface</span><span class="menu-shortcut">F11</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Scene List Mode</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Dock Toolbars</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Source Toolbar</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Source Icons</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Status Bar</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row open-stats-btn"><span class="menu-icon"></span><span class="menu-text">Stats</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Open Multiview</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Always On Top</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">Docks</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Lock Docks</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Full-Height Docks</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Reset Docks</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Custom Browser Docks</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Scenes</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Sources</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Audio Mixer</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Scene Transitions</span></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Controls</span></div>
+                <div class="dropdown-row open-stats-btn"><span class="menu-icon"></span><span class="menu-text">Stats</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">Profile</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">New...</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Duplicate...</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Rename...</span></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Remove</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Import...</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Export...</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Untitled</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">Scene Collection</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">New...</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Duplicate...</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Rename...</span></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Remove</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Import...</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Export...</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Check for Missing Files</span></div>
+                <div class="dropdown-row disabled"><span class="menu-icon"></span><span class="menu-text">Reset Base Resolution</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"><i class="fas fa-check"></i></span><span class="menu-text">Untitled</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">Tools</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Auto-Configuration Wizard</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Plugin Manager</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Captions (Experimental)</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Automatic Scene Switcher</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Output Timer</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Scripts</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">WebSocket Server Settings</span></div>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <span class="menu-title">Help</span>
+            <div class="dropdown-content">
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Help Portal</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Visit Website</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Join Discord Server</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Log Files</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Crash Reports</span><span class="menu-arrow"><i class="fas fa-caret-right"></i></span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Check File Integrity</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Check For Updates</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Restart in Safe Mode</span></div>
+                <div class="menu-separator"></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">What's New</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">Release Notes</span></div>
+                <div class="dropdown-row"><span class="menu-icon"></span><span class="menu-text">About</span></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="obs-workspace">
+
+        <div class="obs-preview-container">
+            <div class="preview-layout-wrapper">
+                
+                <div class="studio-pane" id="previewPane">
+                    <div class="studio-pane-header" id="previewPaneHeader" style="display:none;">PREVIEW</div>
+                    <div class="preview-wrapper" id="previewWrapper" style="position: relative;">
+                        <canvas id="liveRenderCanvas" width="1920" height="1080" style="display:none;"></canvas>
+                        
+                        <canvas id="obsCanvas" width="1920" height="1080"></canvas>
+                        
+                        <div id="domOverlayContainer" style="position: absolute; pointer-events: none; overflow: hidden; transform-origin: 0 0;"></div>
+                        
+                        <canvas id="obsCanvasTop" width="1920" height="1080"></canvas>
+                        
+                        <div class="preview-placeholder" id="previewPlaceholder">No Source Active</div>
+                    </div>
+                </div>
+
+                <div class="studio-controls" id="studioControls" style="display: none;">
+                    <button class="obs-btn" id="studioTransitionBtn" style="height: 40px; font-weight: bold; background-color: #1e50a0; font-size: 14px;">Transition</button>
+                    <div class="studio-quick-transitions">
+                        <button class="obs-btn" id="studioCutBtn">Cut</button>
+                        <button class="obs-btn" id="studioFadeBtn">Fade</button>
+                    </div>
+                    <div class="studio-duration" style="text-align: center; color: #aaa; width: 100%;">
+                        <span style="font-size:11px; display:block; margin-bottom:4px;">Duration</span>
+                        <div style="display:flex; align-items:center; gap:5px; justify-content:center;">
+                            <input type="number" id="studioDurationInput" value="300" class="obs-input-small" style="width:60px;"> ms
+                        </div>
+                    </div>
+                    <div class="studio-tbar-container">
+                         <div class="studio-tbar-track">
+                             <input type="range" id="studioTBar" min="0" max="100" value="0" class="studio-tbar">
+                         </div>
+                    </div>
+                </div>
+
+                <div class="studio-pane" id="programPane" style="display: none;">
+                    <div class="studio-pane-header">PROGRAM</div>
+                    <div class="preview-wrapper" id="programWrapper" style="position: relative; background-color: #000;">
+                        <canvas id="programCanvas" width="1920" height="1080" style="max-width: 100%; max-height: 100%; object-fit: contain; aspect-ratio: 16/9; background-color: transparent; box-shadow: 0 0 15px rgba(0,0,0,0.8); cursor: default; position: absolute;"></canvas>
+                        <div class="preview-placeholder" id="programPlaceholder" style="display:none; z-index: 10;">Live Output</div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="media-controls-bar" id="textControlsBar" style="display: none;">
+                <span id="textSourceName" style="font-weight: 600; width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Text Source</span>
+                <button class="text-icon-btn" id="textPropertiesBtn"><i class="fas fa-cog"></i> Properties</button>
+                <button class="text-icon-btn" id="textFiltersBtn"><i class="fas fa-sliders-h"></i> Filters</button>
+                <div class="media-divider"></div>
+                <span style="color:#aaa;">Quick Edit:</span>
+                <input type="text" id="textInputSource" placeholder="Enter text here..." class="obs-input" style="width: 140px;">
+                <input type="color" id="textColorSource" value="#ffffff" class="obs-color">
+                <select id="textFontSource" class="obs-select" style="width: 120px;">
+                    <option value="Arial">Arial</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Impact">Impact</option>
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                    <option value="Trebuchet MS">Trebuchet MS</option>
+                    <option value="Arial Black">Arial Black</option>
+                    <option value="Lucida Console">Lucida Console</option>
+                </select>
+                <input type="number" id="textSizeSource" value="48" class="obs-input-small"> px
+            </div>
+
+            <div class="media-controls-bar" id="mediaControlsBar" style="display: none;">
+                <span id="mediaSourceName" style="font-weight: 600; width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Media Source</span>
+                <button class="text-icon-btn" id="mediaPropertiesBtn"><i class="fas fa-cog"></i> Properties</button>
+                <button class="text-icon-btn" id="mediaFiltersBtn"><i class="fas fa-sliders-h"></i> Filters</button>
+                <div class="media-divider"></div>
+                <button class="obs-btn-square" id="mediaPlayBtn"><i class="fas fa-play"></i></button>
+                <button class="obs-btn-square" id="mediaPauseBtn"><i class="fas fa-pause"></i></button>
+                <button class="obs-btn-square" id="mediaStopBtn"><i class="fas fa-stop"></i></button>
+                <input type="range" id="mediaSeek" min="0" max="100" value="0" class="obs-slider" style="flex-grow: 1; margin: 0 15px;">
+                <span id="mediaTime">00:00:00 / 00:00:00</span>
+            </div>
+
+            <div class="media-controls-bar" id="browserControlsBar" style="display: none;">
+                <span id="browserSourceName" style="font-weight: 600; width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Browser Source</span>
+                <button class="text-icon-btn" id="browserBarPropertiesBtn"><i class="fas fa-cog"></i> Properties</button>
+                <button class="text-icon-btn" id="browserFiltersBtn"><i class="fas fa-sliders-h"></i> Filters</button>
+                <button class="text-icon-btn" id="browserInteractBtn"><i class="fas fa-hand-pointer"></i> Interact</button>
+                <div class="media-divider"></div>
+                <button class="obs-btn-square" id="browserBackBtn"><i class="fas fa-arrow-left"></i></button>
+                <button class="obs-btn-square" id="browserForwardBtn"><i class="fas fa-arrow-right"></i></button>
+                <button class="obs-btn-square" id="browserRefreshBtn"><i class="fas fa-redo"></i></button>
+                <div class="media-divider"></div>
+                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer; margin-left: 5px; color: #dfdfdf;">
+                    <input type="checkbox" id="browserTransparentBarCheck" checked> Transparent
+                </label>
+                <span style="margin-left: 15px; font-weight: bold; color: #aaa;">Zoom:</span>
+                <input type="range" id="browserZoomSlider" min="10" max="300" value="100" class="obs-slider" style="flex-grow: 1; margin: 0 15px;">
+                <span id="browserZoomText" style="width: 40px;">100%</span>
+            </div>
+
+        </div>
+
+        <div class="obs-docks" id="mainDocksContainer">
+            <div class="dock" id="dock-scenes" data-order="1">
+                <div class="dock-header">
+                    <span>Scenes</span>
+                    <span style="cursor: pointer; color: #888;" class="undock-btn"><i class="far fa-clone"></i></span>
+                </div>
+                <div class="dock-content list-box" id="scenesList">
+                    </div>
+                <div class="dock-toolbar">
+                    <button class="icon-btn" id="addSceneBtn"><i class="fas fa-plus"></i></button>
+                    <button class="icon-btn" id="removeSceneBtn"><i class="fas fa-trash-alt"></i></button>
+                    <button class="icon-btn" id="openSceneTransitionsBtn"><i class="fas fa-magic"></i></button>
+                    <button class="icon-btn" id="moveSceneUpBtn"><i class="fas fa-chevron-up"></i></button>
+                    <button class="icon-btn" id="moveSceneDownBtn"><i class="fas fa-chevron-down"></i></button>
+                </div>
+            </div>
+
+            <div class="dock" id="dock-sources" data-order="2">
+                <div class="dock-header">
+                    <span>Sources</span>
+                    <span style="cursor: pointer; color: #888;" class="undock-btn"><i class="far fa-clone"></i></span>
+                </div>
+                <div class="dock-content list-box" id="sourcesList"></div>
+                <div class="dock-toolbar" style="position: relative;">
+                    <button class="icon-btn" id="addSourceBtn"><i class="fas fa-plus"></i></button>
+                    <button class="icon-btn" id="removeSourceBtn"><i class="fas fa-trash-alt"></i></button>
+                    <button class="icon-btn" id="openSourcePropertiesBtn"><i class="fas fa-cog"></i></button>
+                    <button class="icon-btn" id="moveSourceUpBtn"><i class="fas fa-chevron-up"></i></button>
+                    <button class="icon-btn" id="moveSourceDownBtn"><i class="fas fa-chevron-down"></i></button>
+                    
+                    <div class="context-menu" id="addSourceMenu">
+                        <div class="context-item" data-action="audio-app"><i class="fas fa-volume-up" style="width:20px;"></i> Application Audio Capture (BETA)</div>
+                        <div class="context-item" data-action="audio-in"><i class="fas fa-microphone" style="width:20px;"></i> Audio Input Capture</div>
+                        <div class="context-item" data-action="audio-out"><i class="fas fa-headphones" style="width:20px;"></i> Audio Output Capture</div>
+                        <div class="context-item" data-action="browser"><i class="fas fa-globe" style="width:20px;"></i> Browser</div>
+                        <div class="context-item" data-action="color"><i class="fas fa-palette" style="width:20px;"></i> Color Source</div>
+                        <div class="context-item" data-action="display"><i class="fas fa-desktop" style="width:20px;"></i> Display Capture</div>
+                        <div class="context-item disabled"><i class="fas fa-gamepad" style="width:20px;"></i> Game Capture</div>
+                        <div class="context-item" data-action="image"><i class="fas fa-image" style="width:20px;"></i> Image</div>
+                        <div class="context-item" data-action="slideshow"><i class="fas fa-images" style="width:20px;"></i> Image Slide Show</div>
+                        <div class="context-item" data-action="media"><i class="fas fa-play-circle" style="width:20px;"></i> Media Source</div>
+                        <div class="context-item" data-action="scene"><i class="fas fa-film" style="width:20px;"></i> Scene</div>
+                        <div class="context-item" data-action="text"><i class="fas fa-font" style="width:20px;"></i> Text (GDI+)</div>
+                        <div class="context-item" data-action="video-device"><i class="fas fa-camera" style="width:20px;"></i> Video Capture Device</div>
+                        <div class="context-item" data-action="vlc"><i class="fas fa-play-circle" style="width:20px;"></i> VLC Video Source</div>
+                        <div class="context-item" data-action="window"><i class="far fa-window-maximize" style="width:20px;"></i> Window Capture</div>
+                        <div class="context-separator"></div>
+                        <div class="context-item disabled"><i class="fas fa-folder" style="width:20px;"></i> Group</div>
+                        <div class="context-separator"></div>
+                        <div class="context-item disabled">Deprecated <i class="fas fa-caret-right" style="margin-left:auto;"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dock dock-wide" id="dock-mixer" data-order="3">
+                <div class="dock-header">
+                    <span>Audio Mixer</span>
+                    <span style="cursor: pointer; color: #888;" class="undock-btn"><i class="far fa-clone"></i></span>
+                </div>
+                <div class="dock-content audio-mixer" id="audioMixerContainer"></div>
+                <div class="dock-toolbar">
+                    <button class="icon-btn"><i class="fas fa-cog"></i></button>
+                    <button class="icon-btn"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+
+            <div class="dock" id="dock-transitions" data-order="4">
+                <div class="dock-header">
+                    <span>Scene Transitions</span>
+                    <span style="cursor: pointer; color: #888;" class="undock-btn"><i class="far fa-clone"></i></span>
+                </div>
+                <div class="dock-content transitions-box">
+                    <select class="obs-select" id="dockTransitionSelect">
+                        <option value="none">Cut</option>
+                        <option value="fade">Fade</option>
+                        <option value="slide-left">Slide Left</option>
+                        <option value="slide-right">Slide Right</option>
+                        <option value="slide-up">Slide Up</option>
+                        <option value="slide-down">Slide Down</option>
+                        <option value="spin">Spin</option>
+                        <option value="melt">Melt</option>
+                        <option value="fall-apart">Fall Apart</option>
+                        <option value="zoom-in">Zoom In</option>
+                        <option value="circle-crop">Circle Reveal</option>
+                    </select>
+                    <div class="duration-box">
+                        <span>Duration</span>
+                        <div style="display:flex; align-items:center; gap: 5px;">
+                            <input type="number" id="dockTransitionDuration" value="500" class="obs-input-small"> ms
+                        </div>
+                    </div>
+                </div>
+                <div class="dock-toolbar" style="justify-content: flex-end;">
+                    <button class="icon-btn"><i class="fas fa-plus"></i></button>
+                    <button class="icon-btn"><i class="fas fa-trash-alt"></i></button>
+                    <button class="icon-btn"><i class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+
+            <div class="dock controls-dock" id="dock-controls" data-order="5">
+                <div class="dock-header">
+                    <span>Controls</span>
+                    <span style="cursor: pointer; color: #888;" class="undock-btn"><i class="far fa-clone"></i></span>
+                </div>
+                <div class="dock-content controls-box">
+                    <button class="obs-btn">Start Streaming</button>
+                    <button class="obs-btn" id="startBtn">Start Recording</button>
+                    <button class="obs-btn hidden" id="stopBtn">Stop Recording</button>
+                    <div style="display: flex; gap: 4px;">
+                        <button class="obs-btn" style="flex:1;" id="openEditorBtn">Recordings & Editor</button>
+                        <button class="obs-btn" style="width: 26px; padding: 0; flex-shrink: 0;" id="downloadRecordingBtn" disabled title="Download Latest Recording"><i class="fas fa-download"></i></button>
+                    </div>
+                    <button class="obs-btn" id="studioModeToggleBtn">Studio Mode</button>
+                    <button class="obs-btn" id="settingsBtn">Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="obs-status">
+        <div class="status-left" id="statusBar">Ready</div>
+        <div class="status-right">
+            <span class="status-item"><i class="fas fa-signal"></i></span>
+            <span class="status-item" id="recordingTime"><i class="fas fa-circle" style="color:#888;"></i> 00:00:00</span>
+            <span class="status-item"><i class="fas fa-circle" style="color:#888;"></i> 00:00:00</span>
+            <span class="status-item">CPU: <span id="footerCpu">0.8</span>%</span>
+            <span class="status-item"><span id="footerFps">60.00</span> / 60.00 FPS</span>
+        </div>
+    </footer>
+
+    <input type="file" id="imageInput" accept="image/*" style="display:none;">
+    <input type="file" id="slideshowInput" accept="image/*" multiple style="display:none;">
+    <input type="file" id="slideshowAddInput" accept="image/*" multiple style="display:none;">
+    <input type="file" id="mediaInput" accept="video/*,audio/*" style="display:none;">
+    <input type="file" id="propFileInput" accept="video/*,audio/*" style="display:none;">
+    <input type="file" id="browserFileInput" accept=".html,.htm" style="display:none;">
+    <input type="file" id="imageFileInput" accept="image/*" style="display:none;">
+    <input type="file" id="advEditorMediaInput" accept="video/*,image/*,audio/*" multiple style="display:none;">
+
+    <div class="context-menu" id="audioMixerContextMenu" style="z-index: 5000;">
+        <div class="context-item" id="ctxLockVolume"><i class="fas fa-check" style="visibility:hidden; width: 16px;"></i> Lock Volume</div>
+        <div class="context-item" id="ctxUnhideAll" style="padding-left: 38px;">Unhide All</div>
+        <div class="context-item" id="ctxHide" style="padding-left: 38px;">Hide</div>
+        <div class="context-item" id="ctxRename" style="padding-left: 38px;">Rename...</div>
+        <div class="context-separator"></div>
+        <div class="context-item" id="ctxCopyFilters" style="padding-left: 38px; color: #888;">Copy Filters</div>
+        <div class="context-item" id="ctxPasteFilters" style="padding-left: 38px; color: #888;">Paste Filters</div>
+        <div class="context-separator"></div>
+        <div class="context-item" id="ctxVerticalLayout"><i class="fas fa-check" style="visibility:hidden; width: 16px;"></i> Vertical Layout</div>
+        <div class="context-separator"></div>
+        <div class="context-item" id="ctxFilters" style="padding-left: 38px;">Filters</div>
+        <div class="context-item" id="ctxProperties" style="padding-left: 38px;">Properties</div>
+        <div class="context-item" id="ctxAdvancedProperties" style="padding-left: 38px;">Advanced Audio Properties</div>
+    </div>
+
+    <div class="modal" id="audioFiltersModal">
+        <div class="modal-content obs-window" style="width: 850px; max-width: 95vw; height: 600px;">
+            <div class="window-header">
+                <span id="audioFiltersTitle">Filters for 'Desktop Audio'</span>
+                <button class="close-btn" id="closeAudioFiltersBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; gap: 0; padding: 0; height: calc(100% - 40px);">
+                <div style="width: 250px; background-color: #1d1f26; border-right: 1px solid #3c404d; display: flex; flex-direction: column;">
+                    <div style="padding: 10px; color: #dfdfdf; font-size: 13px;">Audio Filters</div>
+                    <div class="list-box" id="audioFiltersList" style="flex: 1; overflow-y: auto; padding: 0 10px;">
+                        </div>
+                    <div class="dock-toolbar" style="border-top: 1px solid #3c404d; padding: 10px; background: #272a33; position: relative;">
+                        <button class="icon-btn" id="addAudioFilterBtn"><i class="fas fa-plus"></i></button>
+                        <button class="icon-btn" id="removeAudioFilterBtn"><i class="fas fa-trash-alt"></i></button>
+                        <button class="icon-btn" id="moveAudioFilterUpBtn"><i class="fas fa-chevron-up"></i></button>
+                        <button class="icon-btn" id="moveAudioFilterDownBtn"><i class="fas fa-chevron-down"></i></button>
+                        
+                        <div class="context-menu" id="addAudioFilterMenu" style="bottom: 100%; left: 10px;">
+                            <div class="context-item" data-filter="3-Band Equalizer">3-Band Equalizer</div>
+                            <div class="context-item" data-filter="Compressor">Compressor</div>
+                            <div class="context-item" data-filter="Expander">Expander</div>
+                            <div class="context-item" data-filter="Gain">Gain</div>
+                            <div class="context-item" data-filter="Invert Polarity">Invert Polarity</div>
+                            <div class="context-item" data-filter="Limiter">Limiter</div>
+                            <div class="context-item" data-filter="Noise Gate">Noise Gate</div>
+                            <div class="context-item" data-filter="Noise Suppression">Noise Suppression</div>
+                            <div class="context-item" data-filter="Upward Compressor">Upward Compressor</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="audioFilterSettingsContainer" style="flex: 1; padding: 20px; overflow-y: auto; background-color: #272a33;">
+                    <div id="audioFilterSettingsContent">
+                        <div id="noFilterSelected" style="color: #888; text-align: center; margin-top: 100px;">Please select a filter to view its properties.</div>
+                        </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 10px; border-top: 1px solid #3c404d; background: #272a33;">
+                <button class="obs-btn" id="audioFilterDefaultsBtn" style="width: 80px;">Defaults</button>
+                <button class="obs-btn" id="audioFilterCloseBottomBtn" style="width: 80px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="audioDevicePropertiesModal">
+        <div class="modal-content obs-window" style="width: 450px;">
+            <div class="window-header">
+                <span id="audioDevicePropertiesTitle"><i class="fas fa-cog"></i> Properties</span>
+                <button class="close-btn" id="closeAudioDevicePropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 15px;">
+                <div class="prop-row">
+                    <label class="prop-label">Device</label>
+                    <div class="prop-input-container">
+                        <select id="audioPropDeviceSelect" class="obs-select">
+                            <option value="default">Default</option>
+                            <option value="mic1">Microphone (High Definition Audio Device)</option>
+                            <option value="line1">Line In (High Definition Audio Device)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="audioPropUseTimestamps" checked> Use Device Timestamps</label>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="audioPropOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="audioPropCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="customAlertModal" style="z-index: 9999;">
+        <div class="modal-content obs-window" style="width: 400px; max-width: 90vw;">
+            <div class="window-header">
+                <span id="customAlertTitle"><i class="fas fa-info-circle"></i> Message</span>
+                <button class="close-btn" onclick="document.getElementById('customAlertModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="text-align: center;">
+                <p id="customAlertMessage" style="margin-bottom: 20px; line-height: 1.5; color: #dfdfdf;"></p>
+                <button class="obs-btn" style="width: 80px; margin: 0 auto;" onclick="document.getElementById('customAlertModal').classList.remove('active')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="colorPropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="colorPropertiesTitle"><i class="fas fa-palette"></i> Properties for 'Color Source'</span>
+                <button class="close-btn" id="closeColorPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+                
+                <div class="prop-preview-area" style="background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;">
+                    <div id="colorPropertiesPreview" style="width: 100%; height: 100%;"></div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Color</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 5px; align-items: center;">
+                        <input type="color" id="cpColor" value="#ffffff" class="obs-color" style="width: 100px; height: 26px;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Width</label>
+                    <div class="prop-input-container">
+                        <input type="number" id="cpWidth" value="1920" class="obs-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Height</label>
+                    <div class="prop-input-container">
+                        <input type="number" id="cpHeight" value="1080" class="obs-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Opacity (Alpha)</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="cpOpacitySlider" min="0" max="100" value="100" class="obs-slider" style="flex: 1;">
+                        <input type="number" id="cpOpacityNum" min="0" max="100" value="100" class="obs-input-small"> %
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="cpDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="cpOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="cpCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="imagePropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="imagePropertiesTitle"><i class="fas fa-image"></i> Properties for 'Image'</span>
+                <button class="close-btn" id="closeImagePropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+                
+                <div class="prop-preview-area">
+                    <img id="imagePropertiesPreview" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="ipLocalFile" checked> Local file</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label" id="ipFileLabel">Image File</label>
+                    <div class="prop-input-container" style="display: flex; gap: 5px;">
+                        <input type="text" id="ipFilePath" class="obs-input" style="flex: 1;" readonly>
+                        <button class="obs-btn" id="ipFileActionBtn" style="width: 80px;">Browse</button>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label><input type="checkbox" id="ipTransparent"> White to Transparent Background</label>
+                        <label><input type="checkbox" id="ipFlipH"> Flip Horizontal</label>
+                        <label><input type="checkbox" id="ipFlipV"> Flip Vertical</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Opacity</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="ipOpacitySlider" min="0" max="100" value="100" class="obs-slider" style="flex: 1;">
+                        <input type="number" id="ipOpacityNum" min="0" max="100" value="100" class="obs-input-small"> %
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Blend Mode</label>
+                    <div class="prop-input-container">
+                        <select id="ipBlendMode" class="obs-select">
+                            <option value="source-over">Normal</option>
+                            <option value="lighter">Add</option>
+                            <option value="multiply">Multiply</option>
+                            <option value="screen">Screen</option>
+                            <option value="overlay">Overlay</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="ipDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="ipOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="ipCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="textPropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="textPropertiesTitle"><i class="fas fa-font"></i> Properties for 'Text (GDI+)'</span>
+                <button class="close-btn" id="closeTextPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+
+                <div class="prop-preview-area" style="background-color: #111; padding: 20px;">
+                    <canvas id="textPropertiesPreview" style="width: 100%; height: 100%; object-fit: contain;"></canvas>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Font</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 5px;">
+                        <select id="tpFont" class="obs-select" style="flex: 1;">
+                            <option value="Arial">Arial</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Impact">Impact</option>
+                            <option value="Tahoma">Tahoma</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Comic Sans MS">Comic Sans MS</option>
+                            <option value="Trebuchet MS">Trebuchet MS</option>
+                            <option value="Arial Black">Arial Black</option>
+                            <option value="Lucida Console">Lucida Console</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="tpReadFile"> Read from file</label>
+                        <input type="file" id="tpFileInput" accept=".txt" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Text</label>
+                    <div class="prop-input-container">
+                        <textarea id="tpText" class="obs-textarea" style="height: 80px;"></textarea>
+                        <div id="tpFileDisplay" style="display:none; align-items:center; gap:5px; margin-top:5px;">
+                            <input type="text" id="tpFilePath" class="obs-input" readonly style="flex:1;">
+                            <button class="obs-btn" id="tpFileBrowseBtn" style="width:80px;">Browse</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="tpAntialiasing" checked> Enable Antialiasing</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Text Transform</label>
+                    <div class="prop-input-container">
+                        <select id="tpTransform" class="obs-select">
+                            <option value="none">None</option>
+                            <option value="uppercase">Uppercase</option>
+                            <option value="lowercase">Lowercase</option>
+                            <option value="startcase">Start Case</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="tpVertical"> Vertical</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Color</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 5px; align-items: center;">
+                        <input type="color" id="tpColor" value="#ffffff" class="obs-color" style="width: 100px; height: 26px;">
+                        <div id="tpGradientColorContainer" style="display: none; align-items: center; gap: 5px;">
+                            <span style="color: #dfdfdf; margin-left: 10px;">Gradient Color:</span>
+                            <input type="color" id="tpGradientColor" value="#0000ff" class="obs-color" style="width: 100px; height: 26px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Opacity</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="tpOpacitySlider" min="0" max="100" value="100" class="obs-slider" style="flex: 1;">
+                        <input type="number" id="tpOpacityNum" min="0" max="100" value="100" class="obs-input-small"> %
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="tpGradient"> Gradient</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Background Color</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 5px; align-items: center;">
+                        <input type="color" id="tpBgColor" value="#000000" class="obs-color" style="width: 100px; height: 26px;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Background Opacity</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="tpBgOpacitySlider" min="0" max="100" value="0" class="obs-slider" style="flex: 1;">
+                        <input type="number" id="tpBgOpacityNum" min="0" max="100" value="0" class="obs-input-small"> %
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Alignment</label>
+                    <div class="prop-input-container">
+                        <select id="tpAlign" class="obs-select">
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Vertical Alignment</label>
+                    <div class="prop-input-container">
+                        <select id="tpValign" class="obs-select">
+                            <option value="top">Top</option>
+                            <option value="center">Center</option>
+                            <option value="bottom">Bottom</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="tpOutline"> Outline</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="tpDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="tpOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="tpCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="mediaPropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="mediaPropertiesTitle"><i class="fas fa-cog"></i> Properties for 'Media Source'</span>
+                <button class="close-btn" id="closeMediaPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+                
+                <div class="prop-preview-area">
+                    <video id="mediaPropertiesPreview" autoplay loop muted></video>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="propLocalFile" checked> Local File</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label" id="propFileLabel">Local File</label>
+                    <div class="prop-input-container" style="display: flex; gap: 5px;">
+                        <input type="text" id="propFilePath" class="obs-input" style="flex: 1;" readonly>
+                        <button class="obs-btn" id="propFileActionBtn" style="width: 80px;">Browse</button>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label><input type="checkbox" id="propLoop"> Loop</label>
+                        <label><input type="checkbox" id="propRestartActive" checked> Restart playback when source becomes active</label>
+                        <label><input type="checkbox" id="propHardwareDecode"> Use hardware decoding when available</label>
+                        <label><input type="checkbox" id="propShowNothing" checked> Show nothing when playback ends</label>
+                        <label><input type="checkbox" id="propCloseInactive"> Close file when inactive <i class="fas fa-question-circle" style="color: #888;"></i></label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Speed</label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: row; gap: 10px; align-items: center; flex-wrap: nowrap;">
+                        <input type="range" id="propSpeedSlider" min="1" max="200" value="100" class="obs-slider" style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap; flex-shrink: 0;">
+                            <input type="number" id="propSpeedInput" value="100" min="1" max="200" class="obs-input-small"> %
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">YUV Color Range</label>
+                    <div class="prop-input-container">
+                        <select id="propYuvRange" class="obs-select">
+                            <option value="auto">Auto</option>
+                            <option value="partial">Partial/Limited</option>
+                            <option value="full">Full</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="propAlpha"> Apply alpha in linear space</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">FFmpeg Options <i class="fas fa-question-circle" style="color: #888;"></i></label>
+                    <div class="prop-input-container">
+                        <input type="text" id="propFfmpeg" class="obs-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="propDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="propOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="propCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="browserPropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="browserPropertiesTitle"><i class="fas fa-globe"></i> Properties for 'Browser'</span>
+                <button class="close-btn" id="closeBrowserPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+                
+                <div class="prop-preview-area">
+                    <iframe id="browserPropertiesPreview" style="width:100%; height:100%; border:none; pointer-events:none;"></iframe>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="bpLocalFile"> Local file</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label" id="bpFileLabel">URL</label>
+                    <div class="prop-input-container" style="display: flex; gap: 5px;">
+                        <input type="text" id="bpUrlInput" class="obs-input" style="flex: 1;" value="https://shorturl.at/6QyYn">
+                        <button class="obs-btn" id="bpFileActionBtn" style="width: 80px;">Paste</button>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Width</label>
+                    <div class="prop-input-container">
+                        <input type="number" id="bpWidth" value="800" class="obs-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Height</label>
+                    <div class="prop-input-container">
+                        <input type="number" id="bpHeight" value="600" class="obs-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label><input type="checkbox" id="bpTransparent" checked> White to Transparent background</label>
+                        <label><input type="checkbox" id="bpControlAudio"> Control audio via OBS</label>
+                        <label><input type="checkbox" id="bpCustomFps"> Use custom frame rate</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Custom CSS</label>
+                    <div class="prop-input-container">
+                        <textarea id="bpCustomCss" class="obs-textarea">body { background-color: rgba(0, 0, 0, 0); margin: 0px auto; overflow: hidden; }</textarea>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label><input type="checkbox" id="bpShutdownInactive"> Shutdown source when not visible</label>
+                        <label><input type="checkbox" id="bpRefreshActive"> Refresh browser when scene becomes active</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Page permissions</label>
+                    <div class="prop-input-container">
+                        <select id="bpPermissions" class="obs-select">
+                            <option value="read_status">Read access to OBS status information</option>
+                            <option value="none">No access to OBS</option>
+                            <option value="read_user">Read access to user information</option>
+                            <option value="basic">Basic access to OBS (Save replay buffer, etc.)</option>
+                            <option value="advanced">Advanced access to OBS</option>
+                            <option value="full">Full access to OBS</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <button class="obs-btn" id="bpRefreshCacheBtn" style="width: 200px;">Refresh cache of current page</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="bpDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="bpOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="bpCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="slideshowPropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="slideshowPropertiesTitle"><i class="fas fa-images"></i> Properties for 'Slide Show'</span>
+                <button class="close-btn" id="closeSlideshowPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+                
+                <div class="prop-preview-area">
+                    <canvas id="slideshowPropertiesPreview" style="max-width: 100%; max-height: 100%;"></canvas>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Visibility Behavior</label>
+                    <div class="prop-input-container">
+                        <select id="ssPropVisibility" class="obs-select">
+                            <option value="always">Always play even when not visible</option>
+                            <option value="stop">Stop when not visible, restart when visible</option>
+                            <option value="pause">Pause when not visible, unpause when visible</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Slide Mode</label>
+                    <div class="prop-input-container">
+                        <select id="ssPropMode" class="obs-select">
+                            <option value="auto">Automatic</option>
+                            <option value="manual">Manual (Use hotkeys to control slideshow)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Transition</label>
+                    <div class="prop-input-container">
+                        <select id="ssPropTransition" class="obs-select">
+                            <option value="cut">Cut</option>
+                            <option value="fade">Fade</option>
+                            <option value="slide">Slide</option>
+                            <option value="swipe">Swipe</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Time Between Slides</label>
+                    <div class="prop-input-container" style="flex-direction: row; align-items: center; gap: 5px;">
+                        <input type="number" id="ssPropTimeBetween" value="2000" class="obs-input" style="flex: 1; width: 100%;"> ms
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Transition Speed</label>
+                    <div class="prop-input-container" style="flex-direction: row; align-items: center; gap: 5px;">
+                        <input type="number" id="ssPropTransitionSpeed" value="700" class="obs-input" style="flex: 1; width: 100%;"> ms
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Playback Mode</label>
+                    <div class="prop-input-container">
+                        <select id="ssPropPlaybackMode" class="obs-select">
+                            <option value="loop">Loop</option>
+                            <option value="once">Once</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container">
+                        <label><input type="checkbox" id="ssPropHideWhenDone"> Hide when slideshow is done</label>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Bounding Size/Aspect Ratio</label>
+                    <div class="prop-input-container">
+                        <select id="ssPropBounding" class="obs-select">
+                            <option value="auto">Automatic</option>
+                            <option value="1920x1080">1920x1080</option>
+                            <option value="1280x720">1280x720</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row" style="align-items: stretch; height: 150px;">
+                    <label class="prop-label">Image Files</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px;">
+                        <div class="list-box" id="ssPropImageList" style="flex: 1; border: 1px solid #3c404d; background: #1d1f26; overflow-y: auto;">
+                            </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <button class="icon-btn" id="ssBtnAdd"><i class="fas fa-plus"></i></button>
+                            <button class="icon-btn" id="ssBtnRemove"><i class="fas fa-trash-alt"></i></button>
+                            <button class="icon-btn" id="ssBtnSettings"><i class="fas fa-cog"></i></button>
+                            <button class="icon-btn" id="ssBtnUp"><i class="fas fa-chevron-up"></i></button>
+                            <button class="icon-btn" id="ssBtnDown"><i class="fas fa-chevron-down"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="ssPropDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="ssPropOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="ssPropCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal" id="advancedEditorModal">
+        <div class="modal-content obs-window" style="width: 1500px; max-width: 98vw; height: 90vh;">
+            <div class="window-header">
+                <span><i class="fas fa-film"></i> Advanced Video Editor</span>
+                <button class="close-btn" id="closeAdvEditorBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body nle-layout">
+                
+                <div class="nle-panel nle-media-pool">
+                    <div class="nle-panel-header">Project Media</div>
+                    <div class="nle-pool-grid" id="advVideoLibrary"></div>
+                    <div style="padding: 10px;">
+                        <button class="obs-btn" id="advInsertBtn"><i class="fas fa-plus"></i> Add Files</button>
+                    </div>
+                </div>
+                
+                <div class="nle-panel nle-preview">
+                    <div class="adv-preview-wrapper" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; position: relative;">
+                        <canvas id="advEditorPreviewCanvas" width="1920" height="1080" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+                        <div id="advCropOverlay" class="crop-area hidden" style="position: absolute;">
+                            <div class="crop-handle tl"></div><div class="crop-handle tr"></div>
+                            <div class="crop-handle bl"></div><div class="crop-handle br"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nle-panel nle-properties">
+                    <div class="nle-panel-header">Clip Properties</div>
+                    <div class="nle-props-body" id="advClipProps" style="padding: 10px; display: none;">
+                        <div class="prop-row"><label class="prop-label" style="width: 80px;">Position X</label><input type="number" id="advPropX" class="obs-input-small"></div>
+                        <div class="prop-row"><label class="prop-label" style="width: 80px;">Position Y</label><input type="number" id="advPropY" class="obs-input-small"></div>
+                        <div class="prop-row"><label class="prop-label" style="width: 80px;">Scale</label><input type="range" id="advPropScale" min="10" max="300" value="100" class="obs-slider" style="flex:1;"></div>
+                        <div class="prop-row"><label class="prop-label" style="width: 80px;">Opacity</label><input type="range" id="advPropOpacity" min="0" max="100" value="100" class="obs-slider" style="flex:1;"></div>
+                        <hr style="border: 0; border-top: 1px solid #3c404d; margin: 15px 0;">
+                        <button class="obs-btn" id="advToggleCropBtn"><i class="fas fa-crop"></i> Toggle Crop Tool</button>
+                    </div>
+                    <div id="advNoClipSelected" style="padding: 20px; text-align: center; color: #888;">Select a clip on the timeline to edit properties.</div>
+                </div>
+                
+                <div class="nle-panel nle-timeline-area">
+                    <div class="nle-timeline-toolbar">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="obs-btn" id="advEditorPlayBtn" style="width: auto; padding: 0 15px;"><i class="fas fa-play"></i></button>
+                            <span id="advTimeDisplay" style="font-family: monospace; font-size: 14px; margin-left: 10px;">00:00.00</span>
+                            <div class="media-divider" style="height: 16px;"></div>
+                            <button class="icon-btn" id="advSplitBtn" title="Split Clip (S)"><i class="fas fa-cut"></i></button>
+                            <button class="icon-btn" id="advDuplicateBtn" title="Duplicate Clip (Ctrl+D)"><i class="fas fa-copy"></i></button>
+                            <button class="icon-btn" id="advDeleteBtn" title="Delete Clip (Del)"><i class="fas fa-trash"></i></button>
+                            <div class="media-divider" style="height: 16px;"></div>
+                            <input type="range" id="advZoomSlider" min="5" max="100" value="20" title="Zoom Timeline">
+                        </div>
+                        <div class="editor-actions">
+                            <button class="obs-btn" id="advExportBtn" style="background-color: #1e50a0;"><i class="fas fa-file-export"></i> Render & Export</button>
+                        </div>
+                    </div>
+                    
+                    <div class="nle-timeline-container" id="advTimeline">
+                        <div class="nle-timeline-ruler" id="advTimelineRuler"></div>
+                        <div class="nle-playhead" id="advPlayhead"></div>
+                        <div class="nle-tracks-wrapper" id="advTracksWrapper">
+                            <div class="nle-track" data-track="1"><div class="nle-track-header">V2</div><div class="nle-track-content"></div></div>
+                            <div class="nle-track" data-track="0"><div class="nle-track-header">V1</div><div class="nle-track-content"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+   <div class="modal" id="settingsModal">
+        <div class="modal-content obs-window settings-window" style="width: 900px; height: 680px; max-width: 95vw;">
+            <div class="window-header">
+                <span><i class="fas fa-cog"></i> Settings</span>
+                <button class="close-btn" id="closeSettingsBtn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="settings-body">
+                <div class="settings-sidebar">
+                    <div class="settings-tab active" data-target="set-general"><i class="fas fa-cog"></i> General</div>
+                    <div class="settings-tab" data-target="set-appearance"><i class="fas fa-paint-brush"></i> Appearance</div>
+                    <div class="settings-tab" data-target="set-stream"><i class="fas fa-signal"></i> Stream</div>
+                    <div class="settings-tab" data-target="set-output"><i class="fas fa-sign-out-alt"></i> Output</div>
+                    <div class="settings-tab" data-target="set-audio"><i class="fas fa-volume-up"></i> Audio</div>
+                    <div class="settings-tab" data-target="set-video"><i class="fas fa-desktop"></i> Video</div>
+                    <div class="settings-tab" data-target="set-hotkeys"><i class="fas fa-keyboard"></i> Hotkeys</div>
+                    <div class="settings-tab" data-target="set-accessibility"><i class="fas fa-universal-access"></i> Accessibility</div>
+                    <div class="settings-tab" data-target="set-advanced"><i class="fas fa-sliders-h"></i> Advanced</div>
+                </div>
+                
+                <div class="settings-main">
+                    
+                    <div class="settings-section active" id="set-general">
+                        <div class="settings-group">
+                            <div class="settings-group-title">General</div>
+                            <div class="settings-row"><label>Language</label><select class="obs-select"><option>English</option></select></div>
+                            <div class="settings-row"><label></label><label class="chk-label"><input type="checkbox"> Open stats dialog on startup</label></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-appearance">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Appearance</div>
+                            <div class="settings-row"><label>Theme</label><select class="obs-select"><option>Yami</option></select></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-stream">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Destination</div>
+                            <div class="settings-row"><label>Service</label><select class="obs-select" id="streamServiceDropdown"><option>Twitch</option><option>YouTube</option></select></div>
+                            <div class="settings-row"><label>Server</label><select class="obs-select"><option>Auto (Recommended)</option></select></div>
+                            <div class="settings-row"><label>Stream Key</label><input type="password" class="obs-input" id="streamKeyInput" value="live_123456789_xxxxxxxx" style="flex:1;"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-output">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Streaming Output</div>
+                            <div class="settings-row"><label>Video Bitrate</label><input type="number" class="obs-input" value="6000"> Kbps</div>
+                            <div class="settings-row"><label>Audio Bitrate</label><select class="obs-select"><option>160</option></select></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-audio">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Global Audio Devices</div>
+                            <div class="settings-row"><label>Desktop Audio</label><select class="obs-select"><option>Default</option></select></div>
+                            <div class="settings-row"><label>Mic/Auxiliary Audio</label><select class="obs-select"><option>Default</option></select></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-video">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Video Settings</div>
+                            <div class="settings-row"><label>Base (Canvas) Resolution</label><select class="obs-select" id="videoBaseRes"><option value="1920x1080">1920x1080</option><option value="1280x720">1280x720</option></select></div>
+                            <div class="settings-row"><label>Output (Scaled) Resolution</label><select class="obs-select"><option value="1920x1080">1920x1080</option></select></div>
+                            <div class="settings-row"><label>Common FPS Values</label><select class="obs-select" id="videoFps"><option value="60">60</option><option value="30">30</option></select></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-hotkeys">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Hotkeys</div>
+                            <div class="settings-row"><label>Start Streaming</label><div class="hotkey-box"></div></div>
+                            <div class="settings-row"><label>Stop Streaming</label><div class="hotkey-box"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-accessibility">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Accessibility Colors</div>
+                            <div class="settings-row"><label>Source Border (Selection)</label><input type="color" value="#ff0000" class="obs-color" disabled></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" id="set-advanced">
+                        <div class="settings-group">
+                            <div class="settings-group-title">Advanced</div>
+                            <div class="settings-row"><label>Process Priority</label><select class="obs-select"><option>Normal</option><option>High</option></select></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-footer">
+                <button class="obs-btn" id="settingsOkBtn" style="width: 80px;">OK</button>
+                <button class="obs-btn" id="settingsCancelBtn" style="width: 80px;">Cancel</button>
+                <button class="obs-btn" id="settingsApplyBtn" style="width: 80px;">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:none;" id="legacy-settings-elements">
+        <select id="captureMode"></select>
+        <select id="canvasResolution"></select>
+        <select id="frameRate"></select>
+        <input type="checkbox" id="audioToggle" checked>
+        <button id="saveSettingsBtn"></button>
+    </div>
+
+    <div class="modal" id="statsModal">
+        <div class="modal-content obs-window" style="width: 750px; max-width: 95vw;">
+            <div class="window-header">
+                <span><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dfdfdf' width='16' height='16'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/></svg>" style="vertical-align: middle; margin-right: 5px;"> Stats</span>
+                <button class="close-btn" id="closeStatsHeaderBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body stats-body">
+                <div class="stats-top-grid">
+                    <div class="stats-col">
+                        <div class="stat-row"><span>CPU Usage</span><span id="statCpu">3.3%</span></div>
+                        <div class="stat-row"><span>Disk space available</span><span id="statDisk">53.2 GB</span></div>
+                        <div class="stat-row"><span>Disk full in (approx.)</span><span id="statDiskTime">-</span></div>
+                        <div class="stat-row"><span>Memory Usage</span><span id="statMemory">145.4 MB</span></div>
+                    </div>
+                    <div class="stats-col">
+                        <div class="stat-row"><span>FPS</span><span id="statFps">60.00</span></div>
+                        <div class="stat-row"><span>Average time to render frame</span><span id="statRenderTime">0.8 ms</span></div>
+                        <div class="stat-row"><span>Frames missed due to rendering lag</span><span id="statMissedFrames">0 / 0 (0.0%)</span></div>
+                        <div class="stat-row"><span>Skipped frames due to encoding lag</span><span id="statSkippedFrames">0 / 0 (0.0%)</span></div>
+                    </div>
+                </div>
+                
+                <div class="stats-table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Output</th>
+                                <th>Status</th>
+                                <th>Dropped Frames (Network)</th>
+                                <th>Total Data Output</th>
+                                <th>Bitrate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Stream</td>
+                                <td>Inactive</td>
+                                <td>0 / 0 (0.0%)</td>
+                                <td>0.0 MiB</td>
+                                <td>0 kb/s</td>
+                            </tr>
+                            <tr>
+                                <td>Recording</td>
+                                <td id="statRecStatus">Inactive</td>
+                                <td>0 / 0 (0.0%)</td>
+                                <td id="statRecData">0.0 MiB</td>
+                                <td id="statRecBitrate">0 kb/s</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="stats-footer">
+                    <button class="obs-btn" style="width: 80px;" id="resetStatsBtn">Reset</button>
+                    <button class="obs-btn" style="width: 80px;" id="closeStatsBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="audioInputPropertiesModal">
+        <div class="modal-content obs-window" style="width: 600px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="audioInputPropertiesTitle"><i class="fas fa-microphone"></i> Properties for 'Audio Input Capture'</span>
+                <button class="close-btn" id="closeAudioInputPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px;">
+                
+                <div class="prop-row">
+                    <label class="prop-label">Device</label>
+                    <div class="prop-input-container">
+                        <select id="micDeviceSelect" class="obs-select">
+                            <option value="default">Default</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Input Gain</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="micGainSlider" min="0" max="200" value="100" class="obs-slider" style="flex: 1;">
+                        <input type="number" id="micGainNum" min="0" max="200" value="100" class="obs-input-small"> %
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label><input type="checkbox" id="micNoiseSuppression" checked> Enable Noise Suppression</label>
+                        <label><input type="checkbox" id="micEchoCancellation" checked> Enable Echo Cancellation</label>
+                        <label><input type="checkbox" id="micAutoGain"> Enable Auto Gain Control</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="micDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="micOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="micCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="audioWarningModal">
+        <div class="modal-content obs-window" style="width: 500px;">
+            <div class="window-header">
+                <span id="audioWarningTitle"><i class="fas fa-info-circle"></i> Audio Capture Limitation</span>
+                <button class="close-btn" onclick="document.getElementById('audioWarningModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body flex-col">
+                <p style="line-height: 1.5;"><strong>Browser Security Limitation:</strong></p>
+                <p style="line-height: 1.5; color: #bbb;">Web browsers do not allow websites to directly capture your system's speaker output for privacy and security reasons.</p>
+                <p style="line-height: 1.5; color: #bbb;">To capture desktop audio, please add a <strong>Display Capture</strong> source instead, and ensure you check the box that says <em>"Share system audio"</em> or <em>"Also share tab audio"</em> when the browser prompt appears.</p>
+                <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                    <button class="obs-btn" style="width:80px;" onclick="document.getElementById('audioWarningModal').classList.remove('active')">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addSceneModal">
+        <div class="modal-content obs-window" style="width: 400px;">
+            <div class="window-header">
+                <span><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dfdfdf' width='16' height='16'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/></svg>" style="vertical-align: middle; margin-right: 5px;"> Add Scene</span>
+                <button class="close-btn" onclick="document.getElementById('addSceneModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body">
+                <label style="display:block; margin-bottom:10px;">Please enter the name of the scene</label>
+                <input type="text" id="sceneNameInput" class="obs-input" style="width:100%; margin-bottom: 20px;" autofocus>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    <button class="obs-btn" id="confirmAddSceneBtn" style="width:80px;">OK</button>
+                    <button class="obs-btn" id="cancelAddSceneBtn" style="width:80px;" onclick="document.getElementById('addSceneModal').classList.remove('active')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addNestedSceneModal">
+        <div class="modal-content obs-window" style="width: 400px;">
+            <div class="window-header">
+                <span><i class="fas fa-film"></i> Add Scene</span>
+                <button class="close-btn" onclick="document.getElementById('addNestedSceneModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body">
+                <label style="display:block; margin-bottom:10px;">Select existing scene to add:</label>
+                <select id="nestedSceneSelect" class="obs-select" style="width:100%; margin-bottom: 20px;"></select>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="obs-btn" id="confirmAddNestedSceneBtn" style="width:80px;">OK</button>
+                    <button class="obs-btn" onclick="document.getElementById('addNestedSceneModal').classList.remove('active')" style="width:80px;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="addBrowserSourceModal">
+        <div class="modal-content obs-window" style="width: 450px;">
+            <div class="window-header">
+                <span><i class="fas fa-globe"></i> Create/Select Source</span>
+                <button class="close-btn" onclick="document.getElementById('addBrowserSourceModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body">
+                <label style="display:block; margin-bottom:10px;">Please enter the URL for the Browser Source:</label>
+                <p style="font-size: 11px; color:#bbb; margin-bottom: 10px;">(Note: Major sites like Google/YouTube use security headers that block embedding in iframes)</p>
+                <input type="text" id="browserAddUrlInput" class="obs-input" value="https://shorturl.at/6QyYn" style="width:100%; margin-bottom: 20px;" autofocus>
+                <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="obs-btn" id="confirmAddBrowserBtn" style="width:80px;">OK</button>
+                    <button class="obs-btn" id="cancelAddBrowserBtn" style="width:80px;" onclick="document.getElementById('addBrowserSourceModal').classList.remove('active')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="sceneTransitionsModal">
+        <div class="modal-content obs-window" style="width: 600px;">
+            <div class="window-header">
+                <span><i class="fas fa-magic"></i> Scene Transitions</span>
+                <button class="close-btn" onclick="document.getElementById('sceneTransitionsModal').classList.remove('active')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; gap: 15px; height: 350px; padding-bottom: 0;">
+                <div style="width: 200px; border: 1px solid #3c404d; background: #1d1f26; overflow-y: auto; border-radius: 4px;">
+                    <div class="list-item transition-item" data-effect="none">Cut (None)</div>
+                    <div class="list-item transition-item" data-effect="fade">Fade</div>
+                    <div class="list-item transition-item" data-effect="slide-left">Slide Left</div>
+                    <div class="list-item transition-item" data-effect="slide-right">Slide Right</div>
+                    <div class="list-item transition-item" data-effect="slide-up">Slide Up</div>
+                    <div class="list-item transition-item" data-effect="slide-down">Slide Down</div>
+                    <div class="list-item transition-item" data-effect="spin">Spin</div>
+                    <div class="list-item transition-item" data-effect="melt">Melt</div>
+                    <div class="list-item transition-item" data-effect="fall-apart">Fall Apart</div>
+                    <div class="list-item transition-item" data-effect="zoom-in">Zoom In</div>
+                    <div class="list-item transition-item" data-effect="circle-crop">Circle Reveal</div>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="flex: 1; background: #000; border: 1px solid #3c404d; border-radius: 4px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+                        <canvas id="transitionPreviewCanvas" width="360" height="200" style="max-width:100%; max-height:100%;"></canvas>
+                    </div>
+                    <div id="transitionDescription" style="height: 40px; font-size: 13px; color: #bbb;">Instantly switches between scenes with no visual effect.</div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <label>Duration:</label>
+                        <input type="number" id="transitionDurationInput" value="500" class="obs-input-small" style="width: 80px;"> ms
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; padding: 15px; border-top: 1px solid #3c404d;">
+                <button class="obs-btn" id="applyTransitionBtn" style="width: 80px;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="universalFiltersModal">
+        <div class="modal-content obs-window" style="width: 500px;">
+            <div class="window-header">
+                <span id="filtersModalTitle"><i class="fas fa-sliders-h"></i> Filters for Source</span>
+                <button class="close-btn" id="closeFiltersBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body flex-col">
+                <div class="prop-row">
+                    <label class="prop-label">Opacity</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="filterOpacity" min="0" max="100" value="100" class="obs-slider" style="flex: 1;">
+                        <span id="filterOpacityVal" style="width: 40px; text-align: right;">100%</span>
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label class="prop-label">Brightness</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="filterBrightness" min="0" max="200" value="100" class="obs-slider" style="flex: 1;">
+                        <span id="filterBrightnessVal" style="width: 40px; text-align: right;">100%</span>
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label class="prop-label">Contrast</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="filterContrast" min="0" max="200" value="100" class="obs-slider" style="flex: 1;">
+                        <span id="filterContrastVal" style="width: 40px; text-align: right;">100%</span>
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label class="prop-label">Saturation</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="filterSaturation" min="0" max="200" value="100" class="obs-slider" style="flex: 1;">
+                        <span id="filterSaturationVal" style="width: 40px; text-align: right;">100%</span>
+                    </div>
+                </div>
+                <div class="prop-row">
+                    <label class="prop-label">Hue Shift</label>
+                    <div class="prop-input-container" style="flex-direction: row; gap: 10px; align-items: center;">
+                        <input type="range" id="filterHue" min="-180" max="180" value="0" class="obs-slider" style="flex: 1;">
+                        <span id="filterHueVal" style="width: 40px; text-align: right;">0°</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="filterDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <button class="obs-btn" id="filterCloseBtn" style="width: 80px;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="displayPropertiesModal">
+        <div class="modal-content obs-window" style="width: 700px; max-width: 95vw;">
+            <div class="window-header">
+                <span id="displayPropertiesTitle"><i class="fas fa-desktop"></i> Properties for 'Display Capture'</span>
+                <button class="close-btn" id="closeDisplayPropertiesBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body" style="display: flex; flex-direction: column; gap: 10px; max-height: 80vh; overflow-y: auto;">
+                
+                <div class="prop-preview-area">
+                    <video id="displayPropertiesPreview" autoplay muted playsinline></video>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Capture Method</label>
+                    <div class="prop-input-container">
+                        <select id="dpCaptureMethod" class="obs-select">
+                            <option value="auto">Automatic</option>
+                            <option value="dxgi">DXGI Desktop Duplication</option>
+                            <option value="wgc">Windows 10 (1903 and up)</option>
+                            <option value="bitblt">BitBlt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label">Display</label>
+                    <div class="prop-input-container">
+                        <select id="dpDisplaySelect" class="obs-select">
+                            <option value="current">Current Screen/Window</option>
+                            <option value="reselect">... Click to select new display ...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="prop-row">
+                    <label class="prop-label"></label>
+                    <div class="prop-input-container" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label><input type="checkbox" id="dpCaptureCursor" checked> Capture Cursor</label>
+                        <label><input type="checkbox" id="dpForceSDR"> Force SDR</label>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #3c404d;">
+                    <button class="obs-btn" id="dpDefaultsBtn" style="width: 80px;">Defaults</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="obs-btn" id="dpOkBtn" style="width: 80px;">OK</button>
+                        <button class="obs-btn" id="dpCancelBtn" style="width: 80px;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="display:none;" id="legacy-dummy-elements">
+        <button id="openEditorBtn"></button>
+        <button id="closeEditorBtn"></button>
+        <div id="editorModal"></div>
+        <video id="editorPreview"></video>
+        <div id="videoLibrary"></div>
+        <div id="timeline"></div>
+        <div id="timelineTrack"></div>
+        <div id="timelineRuler"></div>
+        <div id="playhead"></div>
+        <button id="cropBtn"></button>
+        <button id="exportBtn"></button>
+        <button id="insertBtn"></button>
+        <div id="cropModal"></div>
+        <video id="cropPreview"></video>
+        <div id="cropArea"></div>
+        <button id="applyCropBtn"></button>
+        <button id="cancelCropBtn"></button>
+        <div id="cropBoundsContainer"></div>
+        <button id="editorPlayBtn"></button>
+        <button id="editorPauseBtn"></button>
+        <button id="editorSplitBtn"></button>
+        <button id="editorDeleteBtn"></button>
+    </div>
+    <div class="modal" id="advancedEditorModal">
+        <div class="modal-content obs-window" style="width: 1400px; max-width: 98vw; height: 90vh;">
+            <div class="window-header">
+                <span><i class="fas fa-film"></i> Advanced Video Editor</span>
+                <button class="close-btn" id="closeAdvEditorBtn"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="window-body nle-layout">
+                <div class="nle-panel nle-media-pool">
+                    <div class="nle-panel-header">Project Media</div>
+                    <div class="nle-pool-grid" id="advVideoLibrary"></div>
+                    <div style="padding: 10px;"><button class="obs-btn" id="advInsertBtn"><i class="fas fa-plus"></i> Import Files</button></div>
+                </div>
+                <div class="nle-panel nle-preview">
+                    <canvas id="advEditorPreviewCanvas" width="1920" height="1080" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+                </div>
+                <div class="nle-panel nle-properties">
+                    <div class="nle-panel-header">Clip Properties</div>
+                    <div id="advClipProps" style="padding: 15px; display: none; color: #dfdfdf;">
+                        <div class="prop-row"><label class="prop-label" style="width: 80px;">Scale</label><input type="range" id="advPropScale" min="10" max="300" value="100" class="obs-slider" style="flex:1;"></div>
+                        <div class="prop-row"><label class="prop-label" style="width: 80px;">Opacity</label><input type="range" id="advPropOpacity" min="0" max="100" value="100" class="obs-slider" style="flex:1;"></div>
+                        <div style="margin-top: 10px; font-size: 11px; color:#888;">Drag clips in the preview window to reposition them.</div>
+                    </div>
+                    <div id="advNoClipSelected" style="padding: 20px; text-align: center; color: #888;">Select a clip to edit properties.</div>
+                </div>
+                <div class="nle-panel nle-timeline-area">
+                    <div class="nle-timeline-toolbar">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button class="obs-btn" id="advEditorPlayBtn" style="width: 40px; padding: 0;"><i class="fas fa-play"></i></button>
+                            <span id="advTimeDisplay" style="font-family: monospace; font-size: 14px; margin-left: 10px; color:white;">00:00.00</span>
+                            <div style="width:1px; height:16px; background:#3c404d; margin: 0 10px;"></div>
+                            <button class="icon-btn" id="advSplitBtn" title="Split Clip (S)"><i class="fas fa-cut"></i></button>
+                            <button class="icon-btn" id="advDeleteBtn" title="Delete Clip (Del)"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <button class="obs-btn" id="advExportBtn" style="background-color: #1e50a0; width: 150px;"><i class="fas fa-file-export"></i> Render Video</button>
+                    </div>
+                    <div class="nle-timeline-container" id="advTimeline">
+                        <div class="nle-timeline-ruler" id="advTimelineRuler"></div>
+                        <div class="nle-playhead" id="advPlayhead"></div>
+                        <div class="nle-tracks-wrapper" id="advTracksWrapper">
+                            <div class="nle-track" data-track="1"><div class="nle-track-header">V2</div><div class="nle-track-content"></div></div>
+                            <div class="nle-track" data-track="0"><div class="nle-track-header">V1</div><div class="nle-track-content"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input type="file" id="advEditorMediaInput" accept="video/*,image/*" multiple style="display:none;">
+
+    <script src="script.js"></script>
+</body>
+</html>
