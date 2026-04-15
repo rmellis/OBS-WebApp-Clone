@@ -101,3 +101,6 @@ Because this application relies entirely on client-side browser technologies (HT
 3. Host the folder on any basic static web server (e.g., VSCode Live Server, GitHub Pages, or Nginx).
 4. Open the URL in a modern desktop browser (Google Chrome or Microsoft Edge highly recommended for optimal MediaRecorder and Hardware Encoding support).
 5. Start creating!
+
+## 📜 Disclaimer
+This project is not affiliated with, endorsed by, or sponsored by the OBS project. All UI designs, references, and aesthetics are utilized under fair use for parody and historical recreation purposes.
